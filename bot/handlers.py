@@ -6,6 +6,7 @@ import sqlite3
 from typing import Dict
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.constants import ParseMode
 from telegram.ext import (
     ContextTypes,
     CommandHandler,
@@ -44,14 +45,32 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     context.user_data["user"] = u
 
     if not u.get("segment"):
+        welcome = (
+            "🌟 *Welcome to Mira Loop!*\n\n"
+            "The AI challenge platform where you learn, compete, and grow.\n\n"
+            "━━━━━━━━━━━━━━━\n"
+            "🎯 Complete challenges using Mira AI\n"
+            "🏆 Climb the leaderboard\n"
+            "🔗 Invite friends and earn bonus XP\n"
+            "━━━━━━━━━━━━━━━\n\n"
+            "*Who are you?* 👇"
+        )
         await update.effective_message.reply_text(
-            "Welcome to Mira Loop! 🚀\nWho are you?", reply_markup=segment_keyboard()
+            welcome, reply_markup=segment_keyboard(), parse_mode=ParseMode.MARKDOWN
         )
         return SEGMENT
 
+    # compute rank for returning user
+    profile = services.get_user_profile(telegram_id)
+    rank = profile.get("rank") if profile else "-"
+    welcome_back = (
+        f"👋 *Welcome back, {u['username']}!*\n\n"
+        f"⭐ XP: *{u['xp']}*\n"
+        f"🏅 Rank: *#{rank}*\n\n"
+        "What's next? 👇"
+    )
     await update.effective_message.reply_text(
-        f"Welcome back, {u['username']}! ⭐ XP: {u['xp']}",
-        reply_markup=main_menu_keyboard(),
+        welcome_back, reply_markup=main_menu_keyboard(), parse_mode=ParseMode.MARKDOWN
     )
     return MAIN_MENU
 
@@ -92,9 +111,16 @@ async def segment_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         finally:
             conn.close()
 
+    segment_msg = (
+        f"✅ *Got it! You're a {segment}.*\n\n"
+        "Here's what awaits you:\n"
+        "— Tailored AI challenges\n"
+        "— XP rewards for every task\n"
+        "— A spot on the leaderboard\n\n"
+        "Ready to begin? 🚀"
+    )
     await query.message.reply_text(
-        f"Great! You're set as {segment}. Let's go! 💪",
-        reply_markup=main_menu_keyboard(),
+        segment_msg, reply_markup=main_menu_keyboard(), parse_mode=ParseMode.MARKDOWN
     )
     return MAIN_MENU
 
@@ -124,7 +150,7 @@ async def get_task_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     context.user_data["current_task"] = task
 
-    await query.message.reply_text(task["text"], parse_mode="Markdown")
+    await query.message.reply_text(task["text"], parse_mode=ParseMode.MARKDOWN)
     if task["proof_type"] == "screenshot":
         await query.message.reply_text("📸 Send a screenshot of your result")
     else:
@@ -175,9 +201,15 @@ async def proof_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         await msg.reply_text(f"❌ {result.get('reason')}. Try again.")
         return AWAITING_PROOF
 
+    approved_msg = (
+        "✅ *Challenge completed!*\n\n"
+        f"+{result.get('xp_earned')} XP earned\n"
+        f"⭐ Total XP: *{result.get('total_xp')}*\n"
+        f"🏅 Your rank: *#{result.get('rank')}*\n\n"
+        "Keep going! 💪"
+    )
     await msg.reply_text(
-        f"✅ Done! +{result.get('xp_earned')} XP\n🏅 Rank: #{result.get('rank')}\n⭐ Total XP: {result.get('total_xp')}",
-        reply_markup=after_task_keyboard(),
+        approved_msg, reply_markup=after_task_keyboard(), parse_mode=ParseMode.MARKDOWN
     )
 
     # notify referrer if any
@@ -202,10 +234,22 @@ async def leaderboard_handler(
     query = update.callback_query
     await query.answer()
     rows = services.get_leaderboard()
-    text = "🏆 Top 10\n\n"
+    formatted = ""
     for r in rows:
-        text += f"{r['rank']}. {r['username']} ({r['segment']}) — {r['xp']} XP\n"
-    await query.message.reply_text(text, reply_markup=back_to_menu_keyboard())
+        formatted += f"{r['rank']}. {r['username']} ({r['segment']}) — {r['xp']} XP\n"
+
+    leaderboard_text = (
+        "🏆 *Mira Loop Leaderboard*\n"
+        "━━━━━━━━━━━━━━━\n"
+        f"{formatted}"
+        "━━━━━━━━━━━━━━━\n"
+        "Keep completing challenges to climb higher! 🚀"
+    )
+    await query.message.reply_text(
+        leaderboard_text,
+        reply_markup=back_to_menu_keyboard(),
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 async def invite_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -216,13 +260,26 @@ async def invite_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     profile = services.get_user_profile(telegram_id)
     referred = profile.get("referred_count") if profile else 0
 
-    text = f"🔗 Your referral link:\n{link}\n\n👥 Friends invited: {referred}\n"
+    invite_text = (
+        "🔗 *Invite Friends — Earn More XP!*\n"
+        "━━━━━━━━━━━━━━━\n"
+        "Your unique referral link:\n"
+        "👇\n"
+        f"*{link}*\n"
+        "━━━━━━━━━━━━━━━\n"
+        f"👥 Friends invited: *{referred}*\n\n"
+        "Share your link and get *+50 XP* for every friend who completes their first challenge!"
+    )
     kb = (
-        InlineKeyboardMarkup([[InlineKeyboardButton("Share link", url=link)]])
+        InlineKeyboardMarkup([[InlineKeyboardButton("Open link", url=link)]])
         if link
         else None
     )
-    await query.message.reply_text(text, reply_markup=kb or back_to_menu_keyboard())
+    await query.message.reply_text(
+        invite_text,
+        reply_markup=kb or back_to_menu_keyboard(),
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 async def profile_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -234,15 +291,21 @@ async def profile_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await query.message.reply_text("Profile not found. Use /start")
         return
 
-    text = (
-        f"👤 {profile['username']}\n"
-        f"🎯 {profile['segment']}\n"
-        f"⭐ XP: {profile['xp']}\n"
-        f"🏅 Rank: #{profile['rank']}\n"
-        f"✅ Tasks done: {profile['tasks_completed']}\n"
-        f"👥 Friends invited: {profile['referred_count']}"
+    profile_text = (
+        f"👤 *{profile['username']}*\n"
+        "━━━━━━━━━━━━━━━\n"
+        f"🎯 Segment: *{profile['segment']}*\n"
+        f"⭐ XP: *{profile['xp']}*\n"
+        f"🏅 Rank: *#{profile['rank']}*\n"
+        f"✅ Tasks done: *{profile['tasks_completed']}*\n"
+        f"👥 Friends invited: *{profile['referred_count']}*\n"
+        "━━━━━━━━━━━━━━━"
     )
-    await query.message.reply_text(text, reply_markup=back_to_menu_keyboard())
+    await query.message.reply_text(
+        profile_text,
+        reply_markup=back_to_menu_keyboard(),
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 async def main_menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
