@@ -107,4 +107,3 @@ python -m bot.main
 
 ---
 
-If you'd like, I can add a `.env.example`, CI workflow, or docker-compose for production deployment.
