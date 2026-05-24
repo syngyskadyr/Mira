@@ -11,57 +11,57 @@ TASKS: List[Dict] = [
     # student segment (3 tasks)
     {
         "segment": "student",
-        "text": "Open Mira (https://mira.com) and create a study board for your current course.",
+        "text": "Open Mira (https://t.me/mira) and create a study board for your current course.",
         "proof_type": "screenshot",
         "xp_reward": 40,
     },
     {
         "segment": "student",
-        "text": "Open Mira (https://mira.com) and add three study notes about today's lesson.",
+        "text": "Open Mira (https://t.me/mira) and add three study notes about today's lesson.",
         "proof_type": "text",
         "xp_reward": 50,
     },
     {
         "segment": "student",
-        "text": "Open Mira (https://mira.com) and invite a classmate to collaborate on a board.",
+        "text": "Open Mira (https://t.me/mira) and invite a classmate to collaborate on a board.",
         "proof_type": "screenshot",
         "xp_reward": 60,
     },
     # marketer segment (3 tasks)
     {
         "segment": "marketer",
-        "text": "Open Mira (https://mira.com) and sketch a marketing funnel for a product launch.",
+        "text": "Open Mira (https://t.me/mira) and sketch a marketing funnel for a product launch.",
         "proof_type": "text",
         "xp_reward": 40,
     },
     {
         "segment": "marketer",
-        "text": "Open Mira (https://mira.com) and create three copy variations for an ad campaign.",
+        "text": "Open Mira (https://t.me/mira) and create three copy variations for an ad campaign.",
         "proof_type": "screenshot",
         "xp_reward": 50,
     },
     {
         "segment": "marketer",
-        "text": "Open Mira (https://mira.com) and map a customer persona with key pain points.",
+        "text": "Open Mira (https://t.me/mira) and map a customer persona with key pain points.",
         "proof_type": "text",
         "xp_reward": 60,
     },
     # founder segment (3 tasks)
     {
         "segment": "founder",
-        "text": "Open Mira (https://mira.com) and draft a one-page roadmap for the next quarter.",
+        "text": "Open Mira (https://t.me/mira) and draft a one-page roadmap for the next quarter.",
         "proof_type": "screenshot",
         "xp_reward": 40,
     },
     {
         "segment": "founder",
-        "text": "Open Mira (https://mira.com) and outline the top three risks for your startup.",
+        "text": "Open Mira (https://t.me/mira) and outline the top three risks for your startup.",
         "proof_type": "text",
         "xp_reward": 50,
     },
     {
         "segment": "founder",
-        "text": "Open Mira (https://mira.com) and build a simple investor pitch storyboard.",
+        "text": "Open Mira (https://t.me/mira) and build a simple investor pitch storyboard.",
         "proof_type": "screenshot",
         "xp_reward": 60,
     },
